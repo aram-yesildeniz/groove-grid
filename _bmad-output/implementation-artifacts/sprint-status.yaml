@@ -1,0 +1,80 @@
+# STATUS DEFINITIONS:
+# ==================
+# Epic Status:
+#   - backlog: Epic not yet started
+#   - in-progress: Epic actively being worked on
+#   - done: All stories in epic completed
+
+# Story Status:
+#   - backlog: Story only exists in epic file
+#   - ready-for-dev: Story file created, ready for development
+#   - in-progress: Developer actively working on implementation
+#   - review: Implementation complete, ready for review
+#   - done: Story completed
+
+# Retrospective Status:
+#   - optional: Can be completed but not required
+#   - done: Retrospective has been completed
+
+# Action Item Status:
+#   - open: Committed during a retrospective, not yet addressed
+#   - in-progress: Actively being worked on
+#   - done: Completed
+
+# WORKFLOW NOTES:
+# ===============
+# - Epic transitions to 'in-progress' automatically when its first story starts (via build's sprint sync)
+# - Stories can be worked in parallel if team capacity allows
+# - Developer typically creates the next story after the previous one is 'done' to incorporate learnings
+# - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
+# - Retrospective appends its action items to action_items; the status view surfaces open ones
+generated: 10-19-2026 22:02
+last_updated: 10-19-2026 22:02
+project: groove-grid
+project_key: NOKEY
+tracking_system: file-system
+story_location: _bmad-output/implementation-artifacts
+development_status:
+  epic-1: backlog
+  1-1-scaffold-ci-and-live-deploy: backlog
+  1-2-closed-form-timing-core: backlog
+  1-3-hear-a-steady-click-start-and-stop: backlog
+  1-4-the-dot-sweeps-in-sync: backlog
+  1-5-audio-that-behaves-on-phones: backlog
+  1-6-iphone-timing-spike-and-platform-gate: backlog
+  epic-1-retrospective: optional
+
+  epic-2: backlog
+  2-1-design-tokens-and-the-practice-screen-layout: backlog
+  2-2-settings-store-and-tempo-steppers: backlog
+  2-3-tempo-changes-land-on-the-beat: backlog
+  2-4-drag-and-tap-tempo: backlog
+  2-5-the-beat-grid-with-spokes-and-labels: backlog
+  2-6-choose-visible-subdivisions: backlog
+  2-7-any-meter: backlog
+  2-8-pulse-tail-and-reduced-motion: backlog
+  epic-2-retrospective: optional
+
+  epic-3: backlog
+  3-1-choose-which-beats-click: backlog
+  3-2-between-beats-click: backlog
+  3-3-mute-and-unmute-in-phase: backlog
+  3-4-choose-the-click-sound: backlog
+  epic-3-retrospective: optional
+
+  epic-4: backlog
+  4-1-place-and-remove-markers: backlog
+  4-2-move-markers-by-dragging: backlog
+  4-3-see-each-marker-crossing: backlog
+  4-4-marker-sound: backlog
+  4-5-clear-all-grid-changes-and-undo: backlog
+  4-6-markers-survive-meter-changes-safely: backlog
+  epic-4-retrospective: optional
+
+  epic-5: backlog
+  5-1-restore-my-last-session: backlog
+  5-2-install-it-and-use-it-offline: backlog
+  5-3-laptop-popovers-and-phone-landscape: backlog
+  5-4-keyboard-control: backlog
+  5-5-accessibility-pass: backlog
+  epic-5-retrospective: optional
