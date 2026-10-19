@@ -72,7 +72,7 @@ Vision plus pain. Musicians practicing timing (especially bassists, but also oth
 - Progress tracking, personal bests, streaks, daily groove, ghosts (including live ghost), and any gamification.
 - Teacher features.
 - Haptic or smartwatch beat output (latency and jitter risk).
-- Audio output latency compensation or calibration (e.g. Bluetooth headphones).
+- User-facing audio latency calibration or manual compensation (e.g. Bluetooth headphones). The dot aligning automatically to the browser-reported output time is in scope (architecture AD-1).
 - Swing ratio and off-grid markers.
 - Line layout.
 - Compound-meter grouping (6/8 felt as 2×3) and custom accents.

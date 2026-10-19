@@ -61,7 +61,7 @@ Behavioral. Visual specs in `DESIGN.md` Components (same names and groups).
 | `grid-circle` + `grid-spoke-*` | One bar, beat 1 at 12 o'clock, clockwise. Draws spokes for the visible levels only. Redraws immediately on grid change; on meter change, redraws at the next downbeat while playing [ASSUMPTION: a mid-bar meter change has no sane dot position], immediately when stopped. It is the only marker input surface. |
 | `sweep-dot` | Position = (audio time − start time) mod bar length; never accumulated. Stopped: rests on beat 1. Start: leaves beat 1 exactly with the first click. |
 | `comet-tail` | Trails the dot while playing. No tail when stopped. |
-| `marker` | Snaps to the finest visible subdivision (16th, or triplet in triplet mode; 8th or beat if those are the finest visible). Multiple allowed, max one per position. Editable while playing or stopped. Persisted (CAP-9). Switching between a binary level (8ths/16ths) and `Triplets` keeps markers on positions shared by both grids (the beats) and removes the rest, then shows `undo-notice`. Switching to a coarser level of the same family keeps markers that still sit on a visible line and removes the rest, same Undo [ASSUMPTION: same rule as the 16th↔triplet decision, so markers never sit off a visible line]. |
+| `marker` | Snaps to the finest visible subdivision (16th, or triplet in triplet mode; 8th or beat if those are the finest visible). Multiple allowed, max one per position. Editable while playing or stopped. Persisted (CAP-9). Switching between a binary level (8ths/16ths) and `Triplets` keeps markers on positions shared by both grids (the beats) and removes the rest, then shows `undo-notice`. Switching to a coarser level of the same family keeps markers that still sit on a visible line and removes the rest, same Undo [ASSUMPTION: same rule as the 16th↔triplet decision, so markers never sit off a visible line]. A meter change that removes beats removes markers in those beats, same Undo (architecture AD-4). While such a meter change is pending, markers cannot be placed in the beats being removed. |
 | `marker-preview` | Appears while a finger/pointer is down in the marker zone, at the snap position; commits on release. On laptop it also follows pointer hover in the marker zone. |
 | `anticipation-glow` | Starts one 16th note (a quarter of a beat) before the dot reaches a marker, peaks at the hit, then hands off to the crossing indicator. |
 | `crossing-indicator` | Fires at the marker's scheduled audio time (from the audio clock, not from dot proximity). Plays the marker sound at the same audio time if one is selected (mute does not affect it). |
@@ -94,7 +94,7 @@ Behavioral. Visual specs in `DESIGN.md` Components (same names and groups).
 | `sheet-nav-row` | `Sounds ›` in the Click sheet/popover. Shows a live summary (`Beep · markers off`, `Woodblock · Cowbell markers`). Tap opens the second level in the same sheet; focus moves to `sheet-back`. |
 | `sheet-back` | Returns to the main view; focus goes back to the `Sounds` row. `Esc` does the same. |
 | `text-action` | `All` next to `Click on beats`: turns every beat on (applies on the next beat while playing). Disabled when all are on. |
-| `meter-preset` | Meter sheet: one tap sets beats per bar and denominator together (`6/8` → 6, `/8`). Editing the stepper or denominator highlights the matching preset, or none. Meter change while playing applies at the next downbeat (see `grid-circle`). |
+| `meter-preset` | Meter sheet: one tap sets beats per bar and denominator together (`6/8` → 6, `/8`). Editing the stepper or denominator highlights the matching preset, or none. Meter change while playing applies at the next downbeat (see `grid-circle`); a tempo change made before that downbeat switches together with the meter (architecture AD-6). |
 | `number-stepper` | Meter sheet: beats per bar, 1–16 [ASSUMPTION: 16 caps "any meter" at a range a circle can still show legibly]. Hold auto-repeats like the tempo stepper. |
 | `segmented-control` | Single choice, applies live. As the meter denominator (`4` / `8`, visible label `Beat unit`): changes the meter label (`7/8`); beats stay equal, accent on beat 1, no compound grouping (SPEC). BPM counts the beat unit (the denominator note) [ASSUMPTION: keeps one tempo model]. Also used for `Between beats`, `Click sound`, `Marker sound`. |
 | `beat-toggle` | Click sheet main view ([mock](mockups/key-click-sheet.html)), one per beat of the current meter. Tap toggles click on that beat; applies on the next beat while playing. Last enabled beat cannot be turned off. See Click on beats. |
@@ -166,7 +166,7 @@ Behavioral. Visual specs in `DESIGN.md` Components (same names and groups).
 | Interrupted (call, other app took audio) | Practice | Stop playback, show the same `Sound paused…` hint. Never auto-resume. |
 | App backgrounded / screen locked | Practice | Stop playback when the page becomes hidden (memlog: no background or screen-off playback in v1). Return shows stopped state with the dot on beat 1. |
 | iOS silent switch | Practice | Request playback audio session (`navigator.audioSession.type = 'playback'`) where supported so the switch does not mute clicks. Where unsupported, on iOS show `No sound? Check the silent switch.` on the first Start after install, once ever [ASSUMPTION: the switch cannot be detected, so a one-time hint is the least noisy option]. |
-| Screen wake lock | Practice | Request a screen wake lock on Start, release on Stop; re-request when the page becomes visible again while playing. If unsupported or denied, do nothing visible [ASSUMPTION: a warning would be noise; most sessions keep touching the screen]. |
+| Screen wake lock | Practice | Request a screen wake lock on Start, release on Stop and whenever playback stops (a hidden page stops playback, so no re-request is needed). If unsupported or denied, do nothing visible [ASSUMPTION: a warning would be noise; most sessions keep touching the screen]. |
 | Sheet open | Any sheet | Playback continues; scrim over controls, grid visible above sheet. |
 | Offline | Practice | Fully functional after first load; no offline banner. |
 | Update available | Practice | New version applies on next launch, never mid-session; no prompt [ASSUMPTION: avoids interrupting practice]. |
@@ -184,7 +184,7 @@ Behavioral. Visual specs in `DESIGN.md` Components (same names and groups).
 | Vertical drag on BPM numeral | Up = faster, 1 BPM per 6 px of travel [ASSUMPTION], live numeral update, clamps at limits. 8 px threshold before drag starts |
 | `Tap` button | See `tap-tempo-button` |
 | Range | 30–250 BPM, integers only. `−` disabled at 30 BPM; `+` disabled at 250 BPM |
-| While playing | Any tempo change (stepper, drag, tap, keys) applies on the next beat (memlog override; was next downbeat). Until then (at most one beat, 2 s at 30 BPM) the numeral shows the new value in `{colors.ink-secondary}`, then `{colors.ink}`; dragging while playing shows the same pending color. Rapid changes within one beat collapse to the latest value. Dot position stays continuous across the switch. Stopped: changes apply immediately and the numeral stays ink. |
+| While playing | Any tempo change (stepper, drag, tap, keys) applies on the next beat (memlog override; was next downbeat). Exception: while a meter change is pending, a tempo change waits for that downbeat and switches with the meter (architecture AD-6). Until then (normally at most one beat, 2 s at 30 BPM) the numeral shows the new value in `{colors.ink-secondary}`, then `{colors.ink}`; dragging while playing shows the same pending color. Rapid changes within one beat collapse to the latest value. Dot position stays continuous across the switch. Stopped: changes apply immediately and the numeral stays ink. |
 
 Rejected (memlog): slider, jog-wheel on the circle.
 
@@ -305,7 +305,7 @@ Context [ASSUMPTION]: his band is adding a slow 6/8 ballad; he wants the six-bea
 6. He opens CLICK and turns beats 2, 3, 5, 6 off; the chip reads `1 & 4` — the two big pulses of the ballad.
 7. **Climax:** the dot crosses 12 o'clock with the high click and his low note lands with it; the 6/8 sway is now something he feels, not counts.
 
-Failure: he changes meter while playing → the grid and click switch at the next downbeat, never mid-bar. Meters outside the list (e.g. 9/8) use the stepper + `8`; no preset is highlighted.
+Failure: he changes meter while playing → the grid and click switch at the next downbeat, never mid-bar; a tempo change before that downbeat switches with it. Meters outside the list (e.g. 9/8) use the stepper + `8`; no preset is highlighted.
 
 ## Inspiration & Anti-patterns
 
