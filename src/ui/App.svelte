@@ -1,14 +1,22 @@
 <script lang="ts">
   import { onMount } from 'svelte'
-  import type { EnginePort, EngineStatus } from '../core/ports.ts'
+  import type { ClockReader, EnginePort, EngineStatus } from '../core/ports.ts'
   import { DEFAULT_SETTINGS } from '../core/settings.ts'
+  import { mount } from '../render/loop.ts'
 
-  let { engine }: { engine: EnginePort } = $props()
+  let { engine, clock }: { engine: EnginePort; clock: ClockReader } = $props()
+
+  let canvas: HTMLCanvasElement
 
   let status = $state<EngineStatus>('stopped')
   onMount(() => {
     status = engine.status
-    return engine.subscribe(() => (status = engine.status))
+    const unmount = mount(canvas, clock)
+    const unsubscribe = engine.subscribe(() => (status = engine.status))
+    return () => {
+      unmount()
+      unsubscribe()
+    }
   })
 
   // `start` calls AudioContext.resume() synchronously, so it must run directly in the tap.
@@ -20,6 +28,7 @@
 
 <main>
   <h1>Groove Grid</h1>
+  <canvas bind:this={canvas} aria-hidden="true"></canvas>
   <button type="button" onclick={toggle}>{status === 'playing' ? 'Stop' : 'Start'}</button>
 </main>
 
@@ -43,6 +52,12 @@
     place-content: center;
     justify-items: center;
     gap: 2rem;
+  }
+
+  canvas {
+    width: clamp(260px, min(100vw - 32px, 480px), 480px);
+    aspect-ratio: 1;
+    display: block;
   }
 
   h1 {

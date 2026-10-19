@@ -2,7 +2,7 @@ import { START_LEAD } from '../core/constants.ts'
 import { createPlanState, plan, type PlanState } from '../core/plan.ts'
 import type { AudioOut, EnginePort, EngineStatus, Pending, Wakeup } from '../core/ports.ts'
 import { DEFAULT_SETTINGS, type Settings } from '../core/settings.ts'
-import { startTimeline, type ClickLevel, type Live } from '../core/timeline.ts'
+import { startTimeline, type ClickLevel, type Live, type Timeline } from '../core/timeline.ts'
 import { clickSampleId } from './sample-bank.ts'
 
 export interface SchedulerDeps {
@@ -19,6 +19,8 @@ export interface SchedulerDeps {
 export interface Scheduler extends EnginePort {
   /** Events dropped because their time had already passed (AD-7). */
   readonly skipped: number
+  /** The timeline being played, or null while stopped. */
+  readonly timeline: Timeline | null
 }
 
 const LEVEL_GAIN: Record<ClickLevel, number> = { accent: 1, beat: 0.7, sub: 0.45 }
@@ -68,6 +70,9 @@ export function createScheduler(deps: SchedulerDeps): Scheduler {
     },
     get skipped() {
       return skipped
+    },
+    get timeline() {
+      return state?.timeline ?? null
     },
     subscribe(listener) {
       listeners.add(listener)

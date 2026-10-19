@@ -65,6 +65,15 @@ describe('scheduler', () => {
     expect(scheduler.skipped).toBe(0)
   })
 
+  it('exposes the playing timeline and clears it on stop', async () => {
+    const { scheduler } = setup()
+    expect(scheduler.timeline).toBeNull()
+    await scheduler.start(DEFAULT_SETTINGS)
+    expect(scheduler.timeline?.segments[0]?.startTime).toBe(10 + START_LEAD)
+    scheduler.stop()
+    expect(scheduler.timeline).toBeNull()
+  })
+
   it('waits for the sample bank before starting', async () => {
     let release!: () => void
     const ready = new Promise<void>((resolve) => (release = resolve))

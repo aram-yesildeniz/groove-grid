@@ -1,4 +1,5 @@
 import type { Settings } from './settings.ts'
+import type { Timeline } from './timeline.ts'
 
 /** Output buses (AD-7). Only `click` is used until markers and previews arrive. */
 export type Bus = 'click' | 'marker' | 'preview'
@@ -32,4 +33,12 @@ export interface EnginePort {
   readonly status: EngineStatus
   readonly pending: Pending | null
   subscribe(listener: () => void): () => void
+}
+
+/** What visuals may know about time (AD-1). */
+export interface ClockReader {
+  /** Audible audio-clock seconds; never decreases. */
+  now(): number
+  /** The timeline being played, or null while stopped. */
+  timeline(): Timeline | null
 }

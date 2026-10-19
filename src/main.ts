@@ -1,4 +1,5 @@
 import { mount } from 'svelte'
+import { createClockReader } from './engine/clock.ts'
 import { createAudioHost } from './engine/audio-context.ts'
 import { createAudioOut } from './engine/audio-out.ts'
 import { loadBank } from './engine/sample-bank.ts'
@@ -22,4 +23,6 @@ const engine = createScheduler({
   ready: out,
 })
 
-mount(App, { target: document.getElementById('app')!, props: { engine } })
+const clock = createClockReader(host.ctx, () => engine.timeline)
+
+mount(App, { target: document.getElementById('app')!, props: { engine, clock } })
