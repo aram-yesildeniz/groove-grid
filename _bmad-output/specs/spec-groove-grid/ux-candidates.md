@@ -1,5 +1,7 @@
 # UX Candidates (unconfirmed)
 
+> History only. The UX run decided these in `EXPERIENCE.md`, which is authoritative.
+
 Coach-proposed ideas from the brainstorm that the user neither adopted nor rejected. They are input for the UX assessment, not commitments. Each one must pass the no-gimmicks and minimal-UI constraints in SPEC.md.
 
 ## Tempo control (relates to CAP-5)

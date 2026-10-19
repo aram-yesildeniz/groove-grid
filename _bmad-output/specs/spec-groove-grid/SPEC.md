@@ -2,10 +2,9 @@
 id: SPEC-groove-grid
 companions:
   - roadmap.md
-  - ux-candidates.md
-ux:
   - ../../planning-artifacts/ux-designs/ux-groove-grid-2026-10-18/DESIGN.md
   - ../../planning-artifacts/ux-designs/ux-groove-grid-2026-10-18/EXPERIENCE.md
+  - ../../planning-artifacts/architecture/architecture-groove-grid-2026-10-19/ARCHITECTURE-SPINE.md
 sources:
   - ../../brainstorming/brainstorm-groove-grid-app-2026-10-18/brainstorm-intent.md
 ---
@@ -53,9 +52,10 @@ Vision plus pain. Musicians practicing timing (especially bassists, but also oth
 - The audio clock is the master. Visuals derive their position from it and never drive timing.
 - The click must be Casio-level stable: no audible jitter, drift, dropouts or glitches. Any flakiness breaks the product. Each click time is derived from the start time, never by accumulating intervals.
 - The phone is the primary device. Layout, touch targets and audio must work there first.
-- Platform: a mobile-first installable web app (PWA) using browser audio. The audio engine stays isolated from the UI, so a React Native port remains cheap if phone testing exposes audio limits.
+- Platform: a mobile-first installable web app (PWA) using browser audio. The primary target is a plain Safari tab on iPhone; home-screen install is secondary. The audio engine stays isolated from the UI, so a React Native port remains cheap if phone testing exposes audio limits.
+- Implementation follows architecture decisions AD-1–AD-13 in `ARCHITECTURE-SPINE.md` (timebase, tick model, settings shape, engine port, scheduling, rendering, persistence, sounds, hosting, and the iPhone timing spike that gates the platform). Cite them by those numbers; the spine also holds the stack.
 - Meters are equal beats with the accent on beat 1 only. There is no compound grouping in v1.
-- Subdivision depth is not hard-coded to 16ths. The grid model must allow finer divisions later; v1 exposes quarters, 8ths and 16ths.
+- Subdivision depth is not hard-coded to 16ths. The grid model must allow finer divisions later; v1 exposes quarters, 8ths, 16ths and triplets.
 - Animation is smooth and high-performance. Dropped frames are a defect.
 - The UI is minimal: only necessary controls, each self-explanatory, with good proportions and contrast.
 - No gimmicks: no unnecessary lights, sounds or features. The practice screen stays pure, and any future progress or gamification lives elsewhere.
@@ -89,8 +89,5 @@ Vision plus pain. Musicians practicing timing (especially bassists, but also oth
 - The "beat 1 only" click pattern comes from the session synthesis. The intent doc lists only every beat, every 16th, 2 & 4, and muted.
 - In v1, self-assessment "when the click returns" means the musician mutes and unmutes manually. The automatic gap click is deferred.
 - The peripheral-vision constraint was adopted from a coach insight the user did not reject.
+- "Any meter" (CAP-1) means 1–16 beats per bar over a /4 or /8 beat unit (UX assumption, fixed in AD-4).
 - The BPM range (30–250) and tolerances (≤1 ms jitter, zero drift, dot within one frame) are drawn from common metronome standards, as the user asked.
-
-## Open Questions
-
-- Tempo control interaction (slider, +/−, tap tempo, jog wheel): pending UX assessment; options in `ux-candidates.md`.
