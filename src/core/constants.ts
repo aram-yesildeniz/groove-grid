@@ -15,3 +15,9 @@ export type ClickSoundId = (typeof CLICK_SOUND_IDS)[number]
 
 export const MARKER_SOUND_IDS = ['clap', 'cowbell', 'conga'] as const
 export type MarkerSoundId = (typeof MARKER_SOUND_IDS)[number]
+
+/** Seconds between worker wake-ups that drive the planner (AD-7); the spike tunes it. */
+export const WAKEUP_INTERVAL = 0.025
+
+/** Seconds between the Start tap and beat 1 (AD-5); the spike tunes it. */
+export const START_LEAD = 0.1

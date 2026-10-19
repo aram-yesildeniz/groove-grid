@@ -7,3 +7,6 @@
 - source_spec: `_bmad-output/implementation-artifacts/spec-1-1-scaffold-ci-and-live-deploy.md`
   summary: Give worker code its own tsconfig (WebWorker lib) instead of a global DOM+WebWorker lib list.
   evidence: Both libs in one config can clash on globals; hidden today by `skipLibCheck`. First worker is story 1.3.
+- source_spec: `_bmad-output/implementation-artifacts/spec-1-3-hear-a-steady-click-start-and-stop.md`
+  summary: Handle sample-bank decode failure at boot (no unhandled rejection, allow retry on next Start).
+  evidence: `loadBank` rejection in `main.ts` is only warned when Start is tapped; fits the 1.5 audio lifecycle story.
