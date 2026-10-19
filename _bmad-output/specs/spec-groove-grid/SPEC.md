@@ -3,6 +3,9 @@ id: SPEC-groove-grid
 companions:
   - roadmap.md
   - ux-candidates.md
+ux:
+  - ../../planning-artifacts/ux-designs/ux-groove-grid-2026-10-18/DESIGN.md
+  - ../../planning-artifacts/ux-designs/ux-groove-grid-2026-10-18/EXPERIENCE.md
 sources:
   - ../../brainstorming/brainstorm-groove-grid-app-2026-10-18/brainstorm-intent.md
 ---
@@ -24,17 +27,17 @@ Vision plus pain. Musicians practicing timing (especially bassists, but also oth
   - **intent:** A smooth, stable dot traverses the bar exactly in tempo and loops back to 1 (continuously around the circle).
   - **success:** Across 30–250 BPM, the dot is within one display frame of each grid line when its click sounds, with no visible stutter.
 - **CAP-3**
-  - **intent:** A classic metronome click plays in sync with the dot, with beat 1 pitched higher.
-  - **success:** Across 30–250 BPM, each click lands within 1 ms of its ideal time, with zero cumulative drift over a 30-minute run. Beat 1 is distinguishable by pitch alone.
+  - **intent:** A classic metronome click plays in sync with the dot, with beat 1 pitched higher. The musician chooses the click sound from a small preset set (Beep, Woodblock, Stick, Hi-hat), each with a beat-1 variant.
+  - **success:** Across 30–250 BPM, each click lands within 1 ms of its ideal time, with zero cumulative drift over a 30-minute run. Beat 1 is distinguishable by pitch alone, for every click sound.
 - **CAP-4**
-  - **intent:** Musician chooses the click pattern (every beat, every 16th, every triplet, only 2 & 4, beat 1 only, or muted) to train internal time with less support.
-  - **success:** Each pattern clicks on exactly its positions. When muted, the dot keeps sweeping silently. Unmuting resumes the click in phase.
+  - **intent:** Musician chooses where the click sounds to train internal time with less support: any combination of beats in the bar (e.g. every beat, 2 & 4, 1 & 3, beat 1 only, only 4), plus an optional between-beats click (none, 8ths, 16ths or triplets) that sounds only within the enabled beats. A separate mute silences the click.
+  - **success:** The click sounds on exactly the enabled positions. At least one beat stays enabled; silence is mute. When muted, the dot keeps sweeping silently. Unmuting resumes the click in phase.
 - **CAP-5**
   - **intent:** Musician sets the tempo in BPM and always sees the current BPM prominently.
   - **success:** The BPM stays visible in every state, and changing it changes the dot and click rate to match.
 - **CAP-6**
   - **intent:** Musician places, moves and removes markers on grid positions. Multiple markers are allowed, and they always snap to a visible subdivision, 16th or triplet (no off-grid placement).
-  - **success:** A marker can be placed, moved and removed with one obvious gesture each, and it always lands on a subdivision line.
+  - **success:** A marker can be placed, moved and removed with one obvious gesture each, and it always lands on a subdivision line. All markers can be cleared at once. Bulk removals (clear all, or a grid change that leaves markers off-grid) can be undone.
 - **CAP-7**
   - **intent:** When the dot crosses a marker, the musician gets a visual indicator and, optionally, a marker sound distinct from the click, chosen from presets.
   - **success:** Every crossing triggers the indicator on time. With the marker sound enabled, it is audibly different from both click pitches.
@@ -42,7 +45,7 @@ Vision plus pain. Musicians practicing timing (especially bassists, but also oth
   - **intent:** Musician starts and stops playback with a single obvious action.
   - **success:** One action starts the dot and click from beat 1, and one action stops both.
 - **CAP-9**
-  - **intent:** The app opens with the musician's last settings: tempo, time signature, visible subdivisions, click pattern, markers and marker sound.
+  - **intent:** The app opens with the musician's last settings: tempo, time signature, visible subdivisions, click sound, enabled click beats, between-beats click, mute state, markers and marker sound.
   - **success:** After closing and reopening the app on the same device, every one of those settings is restored with no setup step.
 
 ## Constraints
