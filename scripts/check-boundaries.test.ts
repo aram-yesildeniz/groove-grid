@@ -22,6 +22,12 @@ afterEach(() => {
 })
 
 describe('findViolations', () => {
+  it('lets core tests import the test runner but not other layers', () => {
+    put('core/a.test.ts', `import { it } from 'vitest'\nimport { x } from '../engine/x'\n`)
+    const v = findViolations(srcDir)
+    expect(v.map((x) => x.specifier)).toEqual(['../engine/x'])
+  })
+
   it('flags core importing another layer', () => {
     put('core/a.ts', `import { x } from '../engine/x'\n`)
     const v = findViolations(srcDir)

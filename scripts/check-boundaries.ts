@@ -42,6 +42,8 @@ export function findViolations(srcDir: string): Violation[] {
     for (const match of source.matchAll(IMPORT_SPECIFIER)) {
       const specifier = match[1]!
       const isRelative = specifier.startsWith('.')
+      // Tests may import the test runner; they still obey the relative-import rules.
+      if (!isRelative && file.endsWith('.test.ts')) continue
       const target = isRelative ? layerOf(srcDir, resolve(dirname(file), specifier)) : null
       if (layer === 'core' && (!isRelative || target !== 'core')) {
         violations.push({ file, specifier, reason: 'core may only import from core' })

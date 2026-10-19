@@ -6,3 +6,12 @@ export const BPM_MAX = 250
 
 export const BEATS_MIN = 1
 export const BEATS_MAX = 16
+
+/** Seconds of audio the planner commits ahead of the clock (AD-7); the spike tunes it. */
+export const LOOKAHEAD = 0.1
+
+export const CLICK_SOUND_IDS = ['beep', 'woodblock', 'stick', 'hi-hat'] as const
+export type ClickSoundId = (typeof CLICK_SOUND_IDS)[number]
+
+export const MARKER_SOUND_IDS = ['clap', 'cowbell', 'conga'] as const
+export type MarkerSoundId = (typeof MARKER_SOUND_IDS)[number]
