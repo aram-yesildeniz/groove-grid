@@ -66,7 +66,6 @@
       <span class="bpm-unit">BPM</span>
     </div>
     <div class="transport-row">
-      <div class="tap-slot" aria-hidden="true"></div>
       <button type="button" onclick={toggle}>{status === 'playing' ? 'Stop' : 'Start'}</button>
     </div>
   </div>
@@ -136,16 +135,17 @@
   }
 
   .tempo-row {
-    display: flex;
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
     align-items: baseline;
-    justify-content: center;
-    gap: var(--space-2);
+    column-gap: var(--space-2);
     padding-top: var(--space-2);
   }
 
   .bpm-numeral {
+    grid-column: 2;
     min-width: 3ch;
-    text-align: right;
+    text-align: center;
     font-size: var(--bpm-numeral-size);
     font-weight: var(--bpm-numeral-weight);
     line-height: var(--bpm-numeral-line);
@@ -154,6 +154,7 @@
   }
 
   .bpm-unit {
+    grid-column: 3;
     font-size: var(--bpm-unit-size);
     font-weight: var(--bpm-unit-weight);
     line-height: var(--bpm-unit-line);
@@ -164,10 +165,6 @@
   .transport-row {
     display: flex;
     gap: var(--space-2);
-  }
-
-  .tap-slot {
-    min-width: 88px;
   }
 
   button {
