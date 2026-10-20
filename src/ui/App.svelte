@@ -158,15 +158,13 @@
   }
 
   .tempo-value {
-    display: grid;
-    grid-template-columns: 1fr auto 1fr;
+    display: flex;
+    justify-content: center;
     align-items: baseline;
     column-gap: var(--space-2);
   }
 
   .bpm-numeral {
-    grid-column: 2;
-    min-width: 3ch;
     text-align: center;
     font-size: var(--bpm-numeral-size);
     font-weight: var(--bpm-numeral-weight);
@@ -176,7 +174,6 @@
   }
 
   .bpm-unit {
-    grid-column: 3;
     font-size: var(--bpm-unit-size);
     font-weight: var(--bpm-unit-weight);
     line-height: var(--bpm-unit-line);
