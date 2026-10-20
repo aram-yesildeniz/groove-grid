@@ -28,6 +28,6 @@ export default defineConfig({
     }),
   ],
   test: {
-    include: ['src/**/*.test.ts', 'scripts/**/*.test.ts'],
+    include: ['src/**/*.test.ts', 'scripts/**/*.test.ts', 'spike/**/*.test.ts'],
   },
 })

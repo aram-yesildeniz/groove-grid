@@ -4,9 +4,15 @@
   import { DEFAULT_SETTINGS } from '../core/settings.ts'
   import { mount } from '../render/loop.ts'
   import { deriveNotice, isIos } from './notice.ts'
+  import SpikePanel from './SpikePanel.svelte'
+  import type { SpikeHooks } from './spike.ts'
   import { createWakeLock } from './wake-lock.ts'
 
-  let { engine, clock }: { engine: EnginePort; clock: ClockReader } = $props()
+  let {
+    engine,
+    clock,
+    spike = null,
+  }: { engine: EnginePort; clock: ClockReader; spike?: SpikeHooks | null } = $props()
 
   let canvas: HTMLCanvasElement
 
@@ -19,7 +25,7 @@
 
   onMount(() => {
     status = engine.status
-    const unmount = mount(canvas, clock)
+    const unmount = mount(canvas, clock, spike?.onFrame)
     const releaseWakeLock = createWakeLock(navigator, engine)
     const unsubscribe = engine.subscribe(() => {
       status = engine.status
@@ -41,7 +47,7 @@
         hintUsed = true
         silentHint = !engine.audioSessionSupported && isIos(navigator)
       }
-      void engine.start(DEFAULT_SETTINGS)
+      void engine.start(spike ? { ...DEFAULT_SETTINGS, bpm: spike.bpm } : DEFAULT_SETTINGS)
     }
   }
 </script>
@@ -51,6 +57,7 @@
   <canvas bind:this={canvas} aria-hidden="true"></canvas>
   <p class="notice" aria-live="polite">{notice}</p>
   <button type="button" onclick={toggle}>{status === 'playing' ? 'Stop' : 'Start'}</button>
+  {#if spike}<SpikePanel snapshot={spike.snapshot} {status} />{/if}
 </main>
 
 <style>

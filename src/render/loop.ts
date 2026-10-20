@@ -7,7 +7,11 @@ import type { Frame, Layer } from './layers/types.ts'
  * Mounts the one animation loop on `canvas` (AD-9). Sizing follows the canvas's CSS box and the
  * screen's pixel density. Returns a dispose function.
  */
-export function mount(canvas: HTMLCanvasElement, clock: ClockReader): () => void {
+export function mount(
+  canvas: HTMLCanvasElement,
+  clock: ClockReader,
+  onFrame?: (timeMs: number) => void,
+): () => void {
   const ctx = canvas.getContext('2d')!
   const layers: Layer[] = [createGridLayer(), createDotLayer()]
   const frame: Frame = {
@@ -36,7 +40,8 @@ export function mount(canvas: HTMLCanvasElement, clock: ClockReader): () => void
 
   readTheme()
   let raf = 0
-  function tick(): void {
+  function tick(timeMs: number): void {
+    onFrame?.(timeMs)
     resize()
     if (frame.size > 0) {
       frame.now = clock.now()

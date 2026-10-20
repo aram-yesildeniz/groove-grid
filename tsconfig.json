@@ -19,6 +19,7 @@
     "src/**/*.ts",
     "src/**/*.svelte",
     "scripts/**/*.ts",
+    "spike/**/*.ts",
     "vite.config.ts",
     "eslint.config.js"
   ]

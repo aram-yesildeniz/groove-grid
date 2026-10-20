@@ -15,6 +15,10 @@ npm run build
 
 `npm test` also runs `scripts/check-boundaries.ts` logic against `src/`: `core` imports only `core`; `render`, `engine` and `persist` never import `ui`. Run it standalone with `node scripts/check-boundaries.ts`.
 
+## Timing spike
+
+The iPhone timing run (AD-13) uses `/?spike=1&bpm=120` for the on-screen log and `node spike/analyze.ts <recording.wav> --bpm 120` for recordings. Runbook and results: `spike/RESULTS.md`.
+
 ## Deploy
 
 Pushes to `main` run `svelte-check` and `vitest`, build, then deploy to https://groove-grid.github.io/ only if checks pass. Rollback = revert the commit on `main`.

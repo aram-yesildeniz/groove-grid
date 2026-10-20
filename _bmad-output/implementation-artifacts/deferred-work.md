@@ -10,3 +10,6 @@
 - source_spec: `_bmad-output/implementation-artifacts/spec-1-3-hear-a-steady-click-start-and-stop.md`
   summary: Handle sample-bank decode failure at boot (no unhandled rejection, allow retry on next Start).
   evidence: `loadBank` rejection in `main.ts` is only warned when Start is tapped; fits the 1.5 audio lifecycle story.
+- source_spec: `_bmad-output/implementation-artifacts/spec-1-6-iphone-timing-spike-and-platform-gate.md`
+  summary: Add a test that `loop.mount` calls `onFrame` and that the spike BPM reaches the engine.
+  evidence: Spike wiring in `main.ts`/`App.svelte`/`loop.ts` has no automated test; verification gap review, low risk for throwaway harness.
