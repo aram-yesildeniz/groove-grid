@@ -2,19 +2,36 @@ import { describe, expect, it, vi } from 'vitest'
 import { START_LEAD, WAKEUP_INTERVAL } from '../core/constants.ts'
 import { DEFAULT_SETTINGS } from '../core/settings.ts'
 import { createFakeClock, createFakeOut, createFakeWakeup } from './fakes.ts'
+import type { PausedReason } from '../core/ports.ts'
 import { createScheduler } from './scheduler.ts'
 
 function setup(overrides: { resume?: () => Promise<void>; ready?: Promise<unknown> } = {}) {
+  let pauseListener: (reason: PausedReason) => void = () => {}
+  const order: string[] = []
   const out = createFakeOut()
   const wakeup = createFakeWakeup()
   const clock = createFakeClock(10)
-  const resume = vi.fn(overrides.resume ?? (() => Promise.resolve()))
+  const resume = vi.fn(() => {
+    order.push('resume')
+    return (overrides.resume ?? (() => Promise.resolve()))()
+  })
+  const recreate = vi.fn(() => {
+    order.push('recreate')
+    return Promise.resolve()
+  })
   const scheduler = createScheduler({
     out,
     wakeup,
     now: clock.now,
     resume,
     ready: overrides.ready ?? Promise.resolve(),
+    recreate,
+    onSystemPause: (listener) => {
+      pauseListener = listener
+      return () => {}
+    },
+    audioSessionSupported: true,
+    resumeTimeoutMs: 1000,
   })
   /** Runs wake-ups on the worker cadence for `seconds` of audio time. */
   const run = (seconds: number) => {
@@ -23,7 +40,18 @@ function setup(overrides: { resume?: () => Promise<void>; ready?: Promise<unknow
       wakeup.wake()
     }
   }
-  return { out, wakeup, clock, resume, scheduler, run }
+  return {
+    out,
+    wakeup,
+    clock,
+    resume,
+    recreate,
+    order,
+    scheduler,
+    run,
+    pause: pauseListener,
+    system: (r: PausedReason) => pauseListener(r),
+  }
 }
 
 const secondsPerBeat = 60 / DEFAULT_SETTINGS.bpm
@@ -157,5 +185,96 @@ describe('scheduler', () => {
     await scheduler.start(DEFAULT_SETTINGS)
     scheduler.stop()
     expect(listener).toHaveBeenCalledTimes(2)
+  })
+
+  describe('platform lifecycle', () => {
+    it.each(['hidden', 'interrupted'] as const)(
+      'stops on %s and does not resume by itself',
+      async (reason) => {
+        const { scheduler, out, wakeup, system, run, resume } = setup()
+        await scheduler.start(DEFAULT_SETTINGS)
+        system(reason)
+        expect(scheduler.status).toBe('paused-by-system')
+        expect(scheduler.pausedReason).toBe(reason)
+        expect(scheduler.timeline).toBeNull()
+        expect(wakeup.running).toBe(false)
+        expect(out.cancelled).toBe(1)
+        run(1)
+        expect(out.played).toHaveLength(0)
+        expect(resume).toHaveBeenCalledTimes(1)
+      },
+    )
+
+    it('ignores system pauses while not playing', () => {
+      const { scheduler, system } = setup()
+      system('hidden')
+      expect(scheduler.status).toBe('stopped')
+      expect(scheduler.pausedReason).toBeNull()
+    })
+
+    it('treats a resume that never settles as resume-failed after the timeout', async () => {
+      vi.useFakeTimers()
+      const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+      const { scheduler, wakeup } = setup({ resume: () => new Promise(() => {}) })
+      const started = scheduler.start(DEFAULT_SETTINGS)
+      await vi.advanceTimersByTimeAsync(1000)
+      await started
+      expect(scheduler.status).toBe('paused-by-system')
+      expect(scheduler.pausedReason).toBe('resume-failed')
+      expect(wakeup.running).toBe(false)
+      expect(scheduler.timeline).toBeNull()
+      warn.mockRestore()
+      vi.useRealTimers()
+    })
+
+    it('treats a rejected or throwing resume as resume-failed without throwing', async () => {
+      const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+      for (const resume of [
+        () => Promise.reject(new Error('no')),
+        () => {
+          throw new Error('closed')
+        },
+      ]) {
+        const { scheduler } = setup({ resume })
+        await scheduler.start(DEFAULT_SETTINGS)
+        expect(scheduler.pausedReason).toBe('resume-failed')
+      }
+      warn.mockRestore()
+    })
+
+    it('recreates before resuming on Start after a pause, then plays from beat 1', async () => {
+      const { scheduler, order, out, run, system } = setup()
+      await scheduler.start(DEFAULT_SETTINGS)
+      system('interrupted')
+      order.length = 0
+      const started = scheduler.start(DEFAULT_SETTINGS)
+      expect(order).toEqual(['recreate', 'resume'])
+      await started
+      expect(scheduler.status).toBe('playing')
+      expect(scheduler.pausedReason).toBeNull()
+      run(WAKEUP_INTERVAL)
+      expect(out.played[0]?.sampleId).toBe('click-beep-accent')
+    })
+
+    it('does not recreate on a normal Start, and stop clears the reason', async () => {
+      const { scheduler, recreate, system } = setup()
+      await scheduler.start(DEFAULT_SETTINGS)
+      expect(recreate).not.toHaveBeenCalled()
+      system('hidden')
+      scheduler.stop()
+      expect(scheduler.status).toBe('stopped')
+      expect(scheduler.pausedReason).toBeNull()
+    })
+
+    it('rebuilds on the next Start after a bank failure', async () => {
+      const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+      const { scheduler, recreate } = setup({ ready: Promise.reject(new Error('decode')) })
+      await scheduler.start(DEFAULT_SETTINGS)
+      expect(scheduler.status).toBe('stopped')
+      await scheduler.start(DEFAULT_SETTINGS)
+      expect(recreate).toHaveBeenCalledTimes(1)
+      expect(scheduler.status).toBe('playing')
+      warn.mockRestore()
+    })
   })
 })

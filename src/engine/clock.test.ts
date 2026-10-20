@@ -8,7 +8,7 @@ describe('createClockReader', () => {
       getOutputTimestamp: () => ({ contextTime: 4.9, performanceTime: 1000 }),
     }
     const clock = createClockReader(
-      source,
+      () => source,
       () => null,
       () => 1500,
     )
@@ -22,20 +22,44 @@ describe('createClockReader', () => {
       outputLatency: 0.02,
       getOutputTimestamp: () => ({ contextTime: 0, performanceTime: 0 }),
     }
-    expect(createClockReader(source, () => null).now()).toBeCloseTo(4.97, 9)
+    expect(
+      createClockReader(
+        () => source,
+        () => null,
+      ).now(),
+    ).toBeCloseTo(4.97, 9)
   })
 
   it('works without outputLatency or getOutputTimestamp', () => {
-    expect(createClockReader({ currentTime: 2 }, () => null).now()).toBe(2)
+    expect(
+      createClockReader(
+        () => ({ currentTime: 2 }),
+        () => null,
+      ).now(),
+    ).toBe(2)
   })
 
   it('never decreases', () => {
     const source: ClockSource = { currentTime: 5 }
-    const clock = createClockReader(source, () => null)
+    const clock = createClockReader(
+      () => source,
+      () => null,
+    )
     expect(clock.now()).toBe(5)
     source.currentTime = 4
     expect(clock.now()).toBe(5)
     source.currentTime = 6
     expect(clock.now()).toBe(6)
+  })
+
+  it('resets its floor when the context changes', () => {
+    let source: ClockSource = { currentTime: 50 }
+    const clock = createClockReader(
+      () => source,
+      () => null,
+    )
+    expect(clock.now()).toBe(50)
+    source = { currentTime: 0.2 }
+    expect(clock.now()).toBe(0.2)
   })
 })

@@ -11,16 +11,23 @@ export interface ClockSource {
 
 /**
  * Audible audio time for visuals (AD-1). The one sanctioned use of `performance.now()` for timing:
- * it interpolates between coarse `currentTime` steps. Never decreases.
+ * it interpolates between coarse `currentTime` steps. Never decreases for one context; follows the current one.
  */
 export function createClockReader(
-  source: ClockSource,
+  getSource: () => ClockSource,
   getTimeline: () => Timeline | null,
   perfNow: () => number = () => performance.now(),
 ): ClockReader {
   let last = 0
+  let lastSource: ClockSource | null = null
   return {
     now() {
+      const source = getSource()
+      if (source !== lastSource) {
+        // A recreated context restarts its clock near zero.
+        lastSource = source
+        last = 0
+      }
       const stamp = source.getOutputTimestamp?.()
       let t: number
       if (stamp?.contextTime && stamp.performanceTime) {

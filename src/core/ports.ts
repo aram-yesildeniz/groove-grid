@@ -19,6 +19,9 @@ export interface Wakeup {
 
 export type EngineStatus = 'stopped' | 'playing' | 'paused-by-system'
 
+/** Why the system stopped playback (AD-8). */
+export type PausedReason = 'hidden' | 'interrupted' | 'resume-failed'
+
 export interface Pending {
   changed: (keyof Settings)[]
   settings: Settings
@@ -31,6 +34,9 @@ export interface EnginePort {
   stop(): void
   apply(settings: Settings): void
   readonly status: EngineStatus
+  readonly pausedReason: PausedReason | null
+  /** False where `navigator.audioSession` is missing. */
+  readonly audioSessionSupported: boolean
   readonly pending: Pending | null
   subscribe(listener: () => void): () => void
 }

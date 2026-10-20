@@ -9,8 +9,14 @@ import App from './ui/App.svelte'
 
 // Composition root: the only place adapters are constructed (AD-8). The context starts suspended.
 const host = createAudioHost()
-const bank = loadBank(host.ctx)
-const out = bank.then((samples) => createAudioOut(host.ctx, samples))
+
+/** Decodes the bank against the current context and builds the output on it. */
+function buildOut() {
+  const built = loadBank(host.ctx).then((samples) => createAudioOut(host.ctx, samples))
+  built.catch(() => {}) // the engine reports and retries on Start
+  return built
+}
+let out = buildOut()
 
 const engine = createScheduler({
   out: {
@@ -21,8 +27,18 @@ const engine = createScheduler({
   now: () => host.ctx.currentTime,
   resume: () => host.resume(),
   ready: out,
+  recreate: () => {
+    host.recreate()
+    out = buildOut()
+    return out
+  },
+  onSystemPause: host.onSystemPause,
+  audioSessionSupported: host.audioSessionSupported,
 })
 
-const clock = createClockReader(host.ctx, () => engine.timeline)
+const clock = createClockReader(
+  () => host.ctx,
+  () => engine.timeline,
+)
 
 mount(App, { target: document.getElementById('app')!, props: { engine, clock } })

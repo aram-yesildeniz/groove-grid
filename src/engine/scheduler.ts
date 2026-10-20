@@ -1,6 +1,13 @@
 import { START_LEAD } from '../core/constants.ts'
 import { createPlanState, plan, type PlanState } from '../core/plan.ts'
-import type { AudioOut, EnginePort, EngineStatus, Pending, Wakeup } from '../core/ports.ts'
+import type {
+  AudioOut,
+  EnginePort,
+  EngineStatus,
+  Pending,
+  PausedReason,
+  Wakeup,
+} from '../core/ports.ts'
 import { DEFAULT_SETTINGS, type Settings } from '../core/settings.ts'
 import { startTimeline, type ClickLevel, type Live, type Timeline } from '../core/timeline.ts'
 import { clickSampleId } from './sample-bank.ts'
@@ -14,6 +21,13 @@ export interface SchedulerDeps {
   resume: () => Promise<void>
   /** Resolves when the sample bank is decoded. */
   ready: Promise<unknown>
+  /** Replaces the audio context and sample bank; returns the new bank's readiness. Called synchronously inside `start`. */
+  recreate: () => Promise<unknown>
+  /** Page-hidden and context interruption reports (AD-8). Returns an unsubscribe. */
+  onSystemPause: (listener: (reason: PausedReason) => void) => () => void
+  audioSessionSupported: boolean
+  /** How long `resume()` may stay unsettled before it counts as failed. */
+  resumeTimeoutMs?: number
 }
 
 export interface Scheduler extends EnginePort {
@@ -23,10 +37,16 @@ export interface Scheduler extends EnginePort {
   readonly timeline: Timeline | null
 }
 
+const RESUME_TIMEOUT_MS = 1000
+
 const LEVEL_GAIN: Record<ClickLevel, number> = { accent: 1, beat: 0.7, sub: 0.45 }
 
 export function createScheduler(deps: SchedulerDeps): Scheduler {
-  const { out, wakeup, now, resume, ready } = deps
+  const { out, wakeup, now, resume, recreate, onSystemPause, audioSessionSupported } = deps
+  const resumeTimeoutMs = deps.resumeTimeoutMs ?? RESUME_TIMEOUT_MS
+  let ready = deps.ready
+  let needsRebuild = false
+  let pausedReason: PausedReason | null = null
   const listeners = new Set<() => void>()
   let status: EngineStatus = 'stopped'
   let settings: Settings = DEFAULT_SETTINGS
@@ -61,7 +81,45 @@ export function createScheduler(deps: SchedulerDeps): Scheduler {
     }
   }
 
+  function halt(): void {
+    generation++
+    wakeup.stop()
+    out.cancelAll()
+    state = null
+  }
+
+  function pause(reason: PausedReason): void {
+    if (status !== 'playing') return
+    halt()
+    needsRebuild = true
+    pausedReason = reason
+    setStatus('paused-by-system')
+  }
+
+  onSystemPause(pause)
+
+  /** Settles when `resume()` does, or rejects after the timeout; never throws synchronously. */
+  function resumeWithTimeout(): Promise<void> {
+    let timer: ReturnType<typeof setTimeout> | undefined
+    const timeout = new Promise<never>((_, reject) => {
+      timer = setTimeout(() => reject(new Error('resume timed out')), resumeTimeoutMs)
+    })
+    let resumed: Promise<void>
+    try {
+      resumed = resume()
+    } catch (error) {
+      resumed = Promise.reject(error)
+    }
+    return Promise.race([resumed, timeout]).finally(() => clearTimeout(timer))
+  }
+
   return {
+    get pausedReason() {
+      return pausedReason
+    },
+    get audioSessionSupported() {
+      return audioSessionSupported
+    },
     get status() {
       return status
     },
@@ -86,12 +144,39 @@ export function createScheduler(deps: SchedulerDeps): Scheduler {
       starting = true
       const mine = generation
       settings = next
-      const resumed = resume()
+      // Rebuild before any await so `resume()` still runs inside the gesture.
+      if (needsRebuild) {
+        needsRebuild = false
+        try {
+          ready = recreate()
+          ready.catch(() => {})
+        } catch (error) {
+          console.warn('Audio rebuild failed', error)
+          needsRebuild = true
+          starting = false
+          return
+        }
+      }
+      const resumed = resumeWithTimeout()
+      resumed.catch(() => {})
       try {
-        await Promise.all([resumed, ready])
+        await ready
       } catch (error) {
-        console.warn('Audio failed to start', error)
+        console.warn('Sample bank failed to load', error)
+        needsRebuild = true
         starting = false
+        return
+      }
+      try {
+        await resumed
+      } catch (error) {
+        console.warn('Audio failed to resume', error)
+        starting = false
+        if (mine !== generation) return
+        halt()
+        needsRebuild = true
+        pausedReason = 'resume-failed'
+        setStatus('paused-by-system')
         return
       }
       starting = false
@@ -103,15 +188,14 @@ export function createScheduler(deps: SchedulerDeps): Scheduler {
         muted: next.muted,
       }
       state = createPlanState(startTimeline(next, now() + START_LEAD), live)
+      pausedReason = null
       setStatus('playing')
       wakeup.start(onWake)
       onWake()
     },
     stop() {
-      generation++
-      wakeup.stop()
-      out.cancelAll()
-      state = null
+      halt()
+      pausedReason = null
       if (status !== 'stopped') setStatus('stopped')
     },
   }
