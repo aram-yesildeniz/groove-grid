@@ -7,6 +7,7 @@ import { createScheduler } from './engine/scheduler.ts'
 import { createWorkerWakeup } from './engine/wakeup.ts'
 import { createFrameRecorder, createGapRecorder, probeWakeup } from './engine/spike-probe.ts'
 import { WAKEUP_INTERVAL } from './core/constants.ts'
+import './ui/tokens.css'
 import App from './ui/App.svelte'
 import { parseSpike } from './ui/spike.ts'
 
