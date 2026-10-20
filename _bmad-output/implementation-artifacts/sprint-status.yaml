@@ -29,7 +29,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 # - Retrospective appends its action items to action_items; the status view surfaces open ones
 generated: 10-19-2026 22:02
-last_updated: 10-20-2026 02:00
+last_updated: 10-20-2026 02:30
 project: groove-grid
 project_key: NOKEY
 tracking_system: file-system
@@ -44,9 +44,9 @@ development_status:
   1-6-iphone-timing-spike-and-platform-gate: done
   epic-1-retrospective: optional
 
-  epic-2: backlog
-  2-1-design-tokens-and-the-practice-screen-layout: backlog
-  2-2-settings-store-and-tempo-steppers: backlog
+  epic-2: in-progress
+  2-1-design-tokens-and-the-practice-screen-layout: review
+  2-2-settings-store-and-tempo-steppers: review
   2-3-tempo-changes-land-on-the-beat: backlog
   2-4-drag-and-tap-tempo: backlog
   2-5-the-beat-grid-with-spokes-and-labels: backlog

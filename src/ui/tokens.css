@@ -1,0 +1,60 @@
+/* Design tokens (UX-DR1, UX-DR2). Light only. */
+:root {
+  --surface: #f7f3ea;
+  --surface-raised: #fffdf8;
+  --surface-pressed: #e8e1d2;
+  --surface-pulse: #f0eadd;
+  --ink: #1c1b19;
+  --ink-secondary: #5c5850;
+  --ink-disabled: #9c968b;
+  --grid-quarter: #1c1b19;
+  --grid-eighth: #4a463f;
+  --grid-sixteenth: #7a746a;
+  --accent: #b4361c;
+  --border-hairline: #d9d2c3;
+  --scrim: #1c1b19;
+
+  --font: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --bpm-numeral-size: 72px;
+  --bpm-numeral-weight: 600;
+  --bpm-numeral-line: 1;
+  --bpm-numeral-tracking: -0.02em;
+  --bpm-unit-size: 13px;
+  --bpm-unit-weight: 600;
+  --bpm-unit-line: 1.2;
+  --bpm-unit-tracking: 0.08em;
+  --beat-label-size: 15px;
+  --beat-label-weight: 600;
+  --beat-label-line: 1;
+  --chip-caption-size: 11px;
+  --chip-caption-weight: 600;
+  --chip-caption-line: 1.2;
+  --chip-caption-tracking: 0.08em;
+  --label-size: 15px;
+  --label-weight: 600;
+  --label-line: 1.2;
+  --body-size: 16px;
+  --body-weight: 400;
+  --body-line: 1.4;
+  --caption-size: 13px;
+  --caption-weight: 400;
+  --caption-line: 1.35;
+
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+  --gutter: 16px;
+  --target-min: 48px;
+  --control-lg: 56px;
+  --column-max: 480px;
+  --chip-padding-x: 12px;
+  --top-bar-height: 66px;
+
+  --radius-md: 12px;
+  --radius-lg: 20px;
+  --radius-full: 9999px;
+}

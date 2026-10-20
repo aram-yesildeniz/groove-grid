@@ -7,7 +7,9 @@ import { createScheduler } from './engine/scheduler.ts'
 import { createWorkerWakeup } from './engine/wakeup.ts'
 import { createFrameRecorder, createGapRecorder, probeWakeup } from './engine/spike-probe.ts'
 import { WAKEUP_INTERVAL } from './core/constants.ts'
+import './ui/tokens.css'
 import App from './ui/App.svelte'
+import { settingsStore } from './ui/settings.svelte.ts'
 import { parseSpike } from './ui/spike.ts'
 
 // Composition root: the only place adapters are constructed (AD-8). The context starts suspended.
@@ -51,6 +53,9 @@ const clock = createClockReader(
   () => engine.timeline,
 )
 
+// The store is the only settings writer; this is the only place it reaches the engine (AD-4).
+settingsStore.subscribe((settings) => engine.apply(settings))
+
 mount(App, {
   target: document.getElementById('app')!,
   props: {
@@ -58,9 +63,8 @@ mount(App, {
     clock,
     spike: spikeParams.enabled
       ? {
-          bpm: spikeParams.bpm,
           snapshot: () => ({
-            bpm: spikeParams.bpm,
+            bpm: settingsStore.current.bpm,
             skipped: engine.skipped,
             wakeups: wakeGaps.stats(),
             frames: frames.stats(),

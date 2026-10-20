@@ -4,7 +4,7 @@ Status: **provisional PASS** (2026-10-20), recorded from the user's runs on an i
 
 ## Setup
 
-1. Open `https://groove-grid.github.io/?spike=1&bpm=120` in an iPhone Safari tab (plain tab, not home screen). Change `bpm` to 30 or 250 for the other runs. `?bpm=` works only together with `spike=1`.
+1. Open `https://groove-grid.github.io/?spike=1` in an iPhone Safari tab (plain tab, not home screen). The `?bpm=` hook was removed in story 2.2; once the tempo steppers are deployed, set the tempo with `−`/`+` (hold to repeat). Before that, builds from the 1.6 commit take `&bpm=120`, `&bpm=250` etc.
 2. Tap Start. The panel shows `elapsedS`, `skipped`, `wakeups` (gaps between worker wake-ups; `late` = gaps over 2 × `WAKEUP_INTERVAL`) and `frames` (rAF deltas; `long` = frames over 1.5 × the median).
 3. Leave the screen on (the app holds a wake lock). After 30 minutes tap **Copy JSON** and paste it into the table notes below.
 

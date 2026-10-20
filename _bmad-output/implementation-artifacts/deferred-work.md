@@ -13,3 +13,9 @@
 - source_spec: `_bmad-output/implementation-artifacts/spec-1-6-iphone-timing-spike-and-platform-gate.md`
   summary: Add a test that `loop.mount` calls `onFrame` and that the spike BPM reaches the engine.
   evidence: Spike wiring in `main.ts`/`App.svelte`/`loop.ts` has no automated test; verification gap review, low risk for throwaway harness.
+- source_spec: `_bmad-output/implementation-artifacts/spec-2-1-design-tokens-and-the-practice-screen-layout.md`
+  summary: Add a DOM component test for `App.svelte` (BPM numeral, Start/Stop label, notice) once a DOM test environment exists.
+  evidence: No automated check renders `App`; layout verified only by headless screenshots; verification-gap review.
+- source_spec: `_bmad-output/implementation-artifacts/spec-2-2-settings-store-and-tempo-steppers.md`
+  summary: Test the store-to-engine wiring (`apply` receives new tempo) and `Stepper.svelte` pointer/keyboard handling.
+  evidence: Only the store and hold-repeat logic are unit-tested; wiring and component handlers need a DOM test setup or a device check. Fits story 2.3's `apply` tests.
