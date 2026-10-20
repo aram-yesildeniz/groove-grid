@@ -2,7 +2,7 @@
 title: 'Story 2.2: Settings store and tempo steppers'
 type: 'feature'
 created: '2026-10-20'
-status: 'in-progress'
+status: 'done'
 route: 'dispatch'
 baseline_commit: 'ec0fa22ba4015326f230a74f6ff8cde54791889c'
 review_loop_iteration: 0
@@ -51,11 +51,11 @@ context:
 ## Tasks & Acceptance
 
 **Execution:**
-- [ ] `src/ui/settings.svelte.ts`, `settings.svelte.test.ts` -- store, `setTempo`, `subscribe` -- matrix rows tap/limit/bad input
-- [ ] `src/ui/hold-repeat.ts`, `hold-repeat.test.ts` -- timers injectable; 400 ms delay, 8/s, 20/s after 1.5 s, stop conditions -- hold row
-- [ ] `src/ui/Stepper.svelte`, `src/ui/App.svelte` -- 56px steppers around a centered numeral, store-driven numeral and start settings -- UX-DR10/11
-- [ ] `src/main.ts`, `src/ui/spike.ts`, `spike.test.ts` -- subscribe → `engine.apply`; remove `?bpm=` -- spike row
-- [ ] Screenshot check at 375×667 (headless), note result -- layout
+- [x] `src/ui/settings.svelte.ts`, `settings.svelte.test.ts` -- store, `setTempo`, `subscribe` -- matrix rows tap/limit/bad input
+- [x] `src/ui/hold-repeat.ts`, `hold-repeat.test.ts` -- timers injectable; 400 ms delay, 8/s, 20/s after 1.5 s, stop conditions -- hold row
+- [x] `src/ui/Stepper.svelte`, `src/ui/App.svelte` -- 56px steppers around a centered numeral, store-driven numeral and start settings -- UX-DR10/11
+- [x] `src/main.ts`, `src/ui/spike.ts`, `spike.test.ts` -- subscribe → `engine.apply`; remove `?bpm=` -- spike row
+- [x] Screenshot check at 375×667 (headless), note result -- layout
 
 **Acceptance Criteria:**
 - Given the app at default, when `+` is tapped, then the numeral shows 81 and `engine.apply` receives a settings object with `bpm` 81.
@@ -65,9 +65,29 @@ context:
 
 ## Implementation Notes
 
+- Implemented directly. Store `createSettingsStore()` + `settingsStore` singleton; `setTempo` ignores non-finite input (keeps current). Listener list is a plain array (lint rule `prefer-svelte-reactivity` flags `Set`). `Stepper.svelte` steps on `pointerdown` via `createHoldRepeat`; `click` only steps for keyboard (`detail === 0`). ESLint config now parses `*.svelte.ts` with the TS parser. Spike `bpm` hook removed; the panel snapshot reads the store. Not tested automatically: `Stepper.svelte`/`App` wiring (no DOM runner); screenshot at 375×667 checked; pointer hold and iOS long-press behavior need a device check.
+
 ## Spec Change Log
 
 ## Review Triage Log
+
+| Finding | Verdict | Route / evidence |
+|---|---|---|
+| `stepTempo` limit arithmetic confusing and untested | medium | patch: moved to `settingsStore.stepTempo`, direction-aware, tested at 30/31/249/250 |
+| Trailing click double-steps on pointer press (`detail === 0` unreliable) | medium | patch: `pointerPressed` flag |
+| No pointer capture; mouse leave drops hold | low | patch: `setPointerCapture`, `pointerleave` removed |
+| Hold timer can outlive the component | low | patch: `$effect` cleanup releases |
+| `setTempo` notifies when the value is unchanged | low | patch: commit skips unchanged snapshots, tested |
+| Removed `?bpm=` leaves docs pointing at it | medium | patch: README and `spike/RESULTS.md` updated |
+| Button disabled mid-hold may miss pointerup | false | `step` returns false at the limit, which stops the hold; capture and cleanup also release |
+| Keyboard Enter auto-repeat steps at OS rate | low | reject: fix adds a keydown path; keyboard use is secondary |
+| Multi-touch on one stepper | low | reject: not an everyday case |
+| Listener throwing breaks other listeners | low | reject: one listener (engine.apply), which does not throw |
+| `engine.apply` safe before first Start | false | `apply` only assigns settings |
+| Tempo row not pinned to 88px | false | grid rows set 88px in `.column` |
+| Store to engine wiring untested | medium | defer: tempo landing and `apply` tests belong with story 2.3 |
+| Stepper/App component tests missing | medium | defer: no DOM runner (already logged for 2.1) |
+| `aria-live` on numeral | low | reject: steppers carry labels; revisit with a11y pass |
 
 ## Verification
 

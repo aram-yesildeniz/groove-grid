@@ -1,10 +1,12 @@
 <script lang="ts">
   import { onMount } from 'svelte'
   import type { ClockReader, EnginePort, EngineStatus, PausedReason } from '../core/ports.ts'
-  import { DEFAULT_SETTINGS } from '../core/settings.ts'
+  import { BPM_MAX, BPM_MIN } from '../core/constants.ts'
   import { mount } from '../render/loop.ts'
   import { deriveNotice, isIos } from './notice.ts'
+  import { settingsStore } from './settings.svelte.ts'
   import SpikePanel from './SpikePanel.svelte'
+  import Stepper from './Stepper.svelte'
   import type { SpikeHooks } from './spike.ts'
   import { createWakeLock } from './wake-lock.ts'
 
@@ -21,7 +23,7 @@
   let silentHint = $state(false)
   // The silent-switch hint shows on the first Start only; kept in memory until Epic 5 persists it.
   let hintUsed = false
-  const bpm = $derived(spike?.bpm ?? DEFAULT_SETTINGS.bpm)
+  const bpm = $derived(settingsStore.current.bpm)
   const notice = $derived(deriveNotice({ status, pausedReason, silentHint }))
 
   onMount(() => {
@@ -48,7 +50,7 @@
         hintUsed = true
         silentHint = !engine.audioSessionSupported && isIos(navigator)
       }
-      void engine.start(spike ? { ...DEFAULT_SETTINGS, bpm: spike.bpm } : DEFAULT_SETTINGS)
+      void engine.start(settingsStore.current)
     }
   }
 </script>
@@ -62,8 +64,22 @@
     </div>
     <p class="notice" aria-live="polite">{notice}</p>
     <div class="tempo-row">
-      <span class="bpm-numeral">{bpm}</span>
-      <span class="bpm-unit">BPM</span>
+      <Stepper
+        label="Decrease tempo"
+        glyph="−"
+        disabled={bpm <= BPM_MIN}
+        step={() => settingsStore.stepTempo(-1)}
+      />
+      <div class="tempo-value">
+        <span class="bpm-numeral">{bpm}</span>
+        <span class="bpm-unit">BPM</span>
+      </div>
+      <Stepper
+        label="Increase tempo"
+        glyph="+"
+        disabled={bpm >= BPM_MAX}
+        step={() => settingsStore.stepTempo(1)}
+      />
     </div>
     <div class="transport-row">
       <button type="button" onclick={toggle}>{status === 'playing' ? 'Stop' : 'Start'}</button>
@@ -136,10 +152,16 @@
 
   .tempo-row {
     display: grid;
+    grid-template-columns: var(--control-lg) 1fr var(--control-lg);
+    align-items: center;
+    padding-top: var(--space-2);
+  }
+
+  .tempo-value {
+    display: grid;
     grid-template-columns: 1fr auto 1fr;
     align-items: baseline;
     column-gap: var(--space-2);
-    padding-top: var(--space-2);
   }
 
   .bpm-numeral {

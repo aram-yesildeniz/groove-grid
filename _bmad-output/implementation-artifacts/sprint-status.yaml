@@ -46,7 +46,7 @@ development_status:
 
   epic-2: in-progress
   2-1-design-tokens-and-the-practice-screen-layout: review
-  2-2-settings-store-and-tempo-steppers: in-progress
+  2-2-settings-store-and-tempo-steppers: review
   2-3-tempo-changes-land-on-the-beat: backlog
   2-4-drag-and-tap-tempo: backlog
   2-5-the-beat-grid-with-spokes-and-labels: backlog

@@ -17,7 +17,7 @@ npm run build
 
 ## Timing spike
 
-The iPhone timing run (AD-13) uses `/?spike=1&bpm=120` for the on-screen log and `node spike/analyze.ts <recording.wav> --bpm 120` for recordings. Runbook and results: `spike/RESULTS.md`.
+The iPhone timing run (AD-13) uses `/?spike=1` for the on-screen log (set the tempo with the steppers) and `node spike/analyze.ts <recording.wav> --bpm 120` for recordings. Runbook and results: `spike/RESULTS.md`.
 
 ## Deploy
 
