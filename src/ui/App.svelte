@@ -66,7 +66,7 @@
     <div class="tempo-row">
       <Stepper
         label="Decrease tempo"
-        glyph="−"
+        kind="minus"
         disabled={bpm <= BPM_MIN}
         step={() => settingsStore.stepTempo(-1)}
       />
@@ -76,7 +76,7 @@
       </div>
       <Stepper
         label="Increase tempo"
-        glyph="+"
+        kind="plus"
         disabled={bpm >= BPM_MAX}
         step={() => settingsStore.stepTempo(1)}
       />

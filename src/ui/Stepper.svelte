@@ -3,10 +3,10 @@
 
   let {
     label,
-    glyph,
+    kind,
     disabled,
     step,
-  }: { label: string; glyph: string; disabled: boolean; step: () => boolean } = $props()
+  }: { label: string; kind: 'minus' | 'plus'; disabled: boolean; step: () => boolean } = $props()
 
   const hold = createHoldRepeat(() => step())
   // A pointer press already stepped; its trailing click must not step again.
@@ -43,7 +43,9 @@
   }}
   oncontextmenu={(event) => event.preventDefault()}
 >
-  {glyph}
+  <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true">
+    <path d={kind === 'plus' ? 'M12 5v14M5 12h14' : 'M5 12h14'} />
+  </svg>
 </button>
 
 <style>
@@ -55,14 +57,21 @@
     border-radius: var(--radius-full);
     background: var(--surface-raised);
     color: var(--ink);
-    font: inherit;
-    font-size: 28px;
-    line-height: 1;
+    display: grid;
+    place-items: center;
     cursor: pointer;
     user-select: none;
     -webkit-user-select: none;
     -webkit-touch-callout: none;
     touch-action: manipulation;
+  }
+
+  svg {
+    display: block;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2.5;
+    stroke-linecap: round;
   }
 
   .stepper:active:not(:disabled) {
